@@ -9,7 +9,7 @@ const COLOR_NAMES = Object.keys(COLORS);
 
 let gameSequence = []; 
 let playerSequence = []; 
-let sequenceLength = 3; // Starts easy with a 3-step sequence
+let sequenceLength = 3; 
 let score = 0;
 const SCORE_TO_WIN = 10;
 let isPlaying = false; 
@@ -18,16 +18,22 @@ let isPlaying = false;
 const messageElement = document.getElementById('message');
 const scoreElement = document.getElementById('score');
 const sequenceDisplay = document.getElementById('sequence-display');
-let sequenceSound; 
+let sequenceSound;      // Sound for sequence playback
+let playerClickSound;   // Sound for player button clicks (NEW)
 
 // --- Game Logic ---
 
-/** Creates the four initial buttons and starts the game. (UPDATED WITH CORRECT SOUND FILE NAME) */
+/** Creates the four initial buttons and sets up audio elements. (UPDATED) */
 function initializeGame() {
-    // 1. Setup Audio Element
+    // 1. Setup Audio Elements
     sequenceSound = new Audio('./Space_Button.mp3'); 
     sequenceSound.preload = 'auto';
-    sequenceSound.volume = 0.5; // Set volume to 50% for a soft sound
+    sequenceSound.volume = 0.5; 
+
+    // NEW: Use the same sound file for player clicks, but you can change the name later
+    playerClickSound = new Audio('./Space_Button.mp3'); 
+    playerClickSound.preload = 'auto';
+    playerClickSound.volume = 0.3; // Slightly softer feedback sound
 
     // 2. Setup Buttons
     COLOR_NAMES.forEach(colorName => {
@@ -44,7 +50,7 @@ function initializeGame() {
     setTimeout(newRound, 1000);
 }
 
-/** Displays the sequence to the player. (UPDATED with sound playback) */
+/** Displays the sequence to the player (Plays sequenceSound). */
 function displaySequence() {
     let i = 0;
     const interval = setInterval(() => {
@@ -52,14 +58,12 @@ function displaySequence() {
             const color = gameSequence[i];
             const button = document.querySelector(`.sequence-button.${color}`);
             
-            // Highlight the button
             button.classList.add('active');
             
-            // 🔊 Play the sound simultaneously with the light-up
+            // 🔊 Play the sequence cue sound
             sequenceSound.currentTime = 0; 
             sequenceSound.play().catch(e => console.log('Audio playback blocked:', e)); 
             
-            // Turn it off after a short time
             setTimeout(() => {
                 button.classList.remove('active');
             }, 500); 
@@ -68,13 +72,55 @@ function displaySequence() {
         } else {
             clearInterval(interval);
             messageElement.textContent = "Your turn! Repeat the sequence.";
-            // Enable buttons for player input
             document.querySelectorAll('.sequence-button').forEach(btn => btn.style.pointerEvents = 'auto');
             document.querySelectorAll('.sequence-button').forEach(btn => btn.style.opacity = '1'); 
             isPlaying = true;
             playerSequence = [];
         }
     }, 800); 
+}
+
+/** Handles the player clicking one of the buttons. (UPDATED to play sound) */
+function handlePlayerClick(event) {
+    if (!isPlaying) return;
+
+    // 🔊 Play the player click sound immediately
+    playerClickSound.currentTime = 0;
+    playerClickSound.play().catch(e => console.log('Audio playback blocked:', e));
+    
+    const clickedColor = event.target.getAttribute('data-color');
+    playerSequence.push(clickedColor);
+
+    const currentStep = playerSequence.length - 1;
+    
+    // Check if the current click matches the sequence
+    if (playerSequence[currentStep] === gameSequence[currentStep]) {
+        // Correct logic remains the same
+        
+        if (playerSequence.length === gameSequence.length) {
+            score++;
+            scoreElement.textContent = "Score: " + score;
+            messageElement.textContent = "SUCCESS! Get ready for the next sequence.";
+            
+            if (score >= SCORE_TO_WIN) {
+                handleWin();
+                return;
+            }
+            
+            document.querySelectorAll('.sequence-button').forEach(btn => btn.style.pointerEvents = 'none');
+            document.querySelectorAll('.sequence-button').forEach(btn => btn.style.opacity = '0.5'); 
+            isPlaying = false;
+            setTimeout(newRound, 1800); 
+        }
+    } else {
+        // Incorrect logic remains the same
+        messageElement.textContent = "MISSION FAILED! Watch the sequence again.";
+        document.querySelectorAll('.sequence-button').forEach(btn => btn.style.pointerEvents = 'none');
+        document.querySelectorAll('.sequence-button').forEach(btn => btn.style.opacity = '0.5'); 
+        isPlaying = false;
+        
+        setTimeout(newRound, 2500); 
+    }
 }
 
 /** Generates a new random sequence. (Includes difficulty increase) */
@@ -89,47 +135,6 @@ function generateSequence() {
     for (let i = 0; i < sequenceLength; i++) {
         const randomColor = COLOR_NAMES[Math.floor(Math.random() * COLOR_NAMES.length)];
         gameSequence.push(randomColor);
-    }
-}
-
-/** Handles the player clicking one of the buttons. */
-function handlePlayerClick(event) {
-    if (!isPlaying) return;
-
-    const clickedColor = event.target.getAttribute('data-color');
-    playerSequence.push(clickedColor);
-
-    const currentStep = playerSequence.length - 1;
-    
-    // Check if the current click matches the sequence
-    if (playerSequence[currentStep] === gameSequence[currentStep]) {
-        // Correct click
-        
-        if (playerSequence.length === gameSequence.length) {
-            // Sequence is complete and correct!
-            score++;
-            scoreElement.textContent = "Score: " + score;
-            messageElement.textContent = "SUCCESS! Get ready for the next sequence.";
-            
-            if (score >= SCORE_TO_WIN) {
-                handleWin();
-                return;
-            }
-            
-            // Disable buttons and start next round
-            document.querySelectorAll('.sequence-button').forEach(btn => btn.style.pointerEvents = 'none');
-            document.querySelectorAll('.sequence-button').forEach(btn => btn.style.opacity = '0.5'); 
-            isPlaying = false;
-            setTimeout(newRound, 1800); 
-        }
-    } else {
-        // Incorrect click
-        messageElement.textContent = "MISSION FAILED! Watch the sequence again.";
-        document.querySelectorAll('.sequence-button').forEach(btn => btn.style.pointerEvents = 'none');
-        document.querySelectorAll('.sequence-button').forEach(btn => btn.style.opacity = '0.5'); 
-        isPlaying = false;
-        
-        setTimeout(newRound, 2500); 
     }
 }
 
