@@ -18,25 +18,28 @@ let isPlaying = false;
 const messageElement = document.getElementById('message');
 const scoreElement = document.getElementById('score');
 const sequenceDisplay = document.getElementById('sequence-display');
-let sequenceSound;      // Sound for sequence playback
-let playerClickSound;   // Sound for player button clicks (THIS IS NOW CORRECTLY INITIALIZED)
+let sequenceSound;      
+let playerClickSound;   
+let startButton; // NEW: Reference for the start button
 
 // --- Game Logic ---
 
-/** Creates the four initial buttons and sets up audio elements. (FIXED) */
+/** Creates the initial buttons and sets up audio elements. (FIXED FOR BROWSER POLICY) */
 function initializeGame() {
-    // 1. Setup Audio Elements
+    // 1. Get the start button reference
+    startButton = document.getElementById('start-button');
+    startButton.addEventListener('click', startGame);
+
+    // 2. Setup Audio Elements
     sequenceSound = new Audio('./Space_Button.mp3'); 
     sequenceSound.preload = 'auto';
     sequenceSound.volume = 0.5; 
 
-    // 🌟🌟🌟 THE CRITICAL FIX IS HERE 🌟🌟🌟
-    // We now correctly initialize the second audio element:
     playerClickSound = new Audio('./Space_Button.mp3'); 
     playerClickSound.preload = 'auto';
-    playerClickSound.volume = 0.3; // Slightly softer feedback sound
+    playerClickSound.volume = 0.3; 
 
-    // 2. Setup Buttons
+    // 3. Setup Buttons (These are created, but hidden by the start-screen initially)
     COLOR_NAMES.forEach(colorName => {
         const button = document.createElement('button');
         button.classList.add('sequence-button', colorName);
@@ -46,14 +49,25 @@ function initializeGame() {
         button.addEventListener('click', handlePlayerClick);
         sequenceDisplay.appendChild(button);
     });
-    
-    // Start the game loop
-    setTimeout(newRound, 1000);
 }
 
-/** Displays the sequence to the player (Plays sequenceSound). (1200ms delay) */
+/** Function called ONLY by the user's first click to unlock audio. (NEW) */
+function startGame() {
+    // Hide the start screen
+    document.getElementById('start-screen').style.display = 'none';
+    messageElement.textContent = "Get ready!";
+    
+    // Start the game loop after a brief delay
+    setTimeout(newRound, 1000); 
+}
+
+/** Displays the sequence to the player (Plays sequenceSound). (IMPROVED CONSISTENCY) */
 function displaySequence() {
     let i = 0;
+    // CRITICAL TIMING: Use 500ms for light duration and 700ms for delay, making the cycle exactly 1200ms
+    const lightDuration = 500;
+    const intervalDelay = 1200; 
+
     const interval = setInterval(() => { 
         if (i < gameSequence.length) {
             const color = gameSequence[i];
@@ -61,13 +75,14 @@ function displaySequence() {
             
             button.classList.add('active');
             
-            // Play the sequence cue sound
+            // 🔊 Play the sequence cue sound
             sequenceSound.currentTime = 0; 
-            sequenceSound.play().catch(e => console.log('Audio playback blocked:', e)); 
+            sequenceSound.play().catch(e => console.log('Audio playback failed (after unlock):', e)); 
             
+            // Turn it off after the lightDuration
             setTimeout(() => {
                 button.classList.remove('active');
-            }, 500); 
+            }, lightDuration); 
             
             i++;
         } else {
@@ -78,7 +93,7 @@ function displaySequence() {
             isPlaying = true;
             playerSequence = [];
         }
-    }, 1200); 
+    }, intervalDelay); // <-- Cycle time is 1.2 seconds
 }
 
 /** Generates a new random sequence. (Includes difficulty increase) */
@@ -101,7 +116,7 @@ function handlePlayerClick(event) {
 
     // 🔊 Play the player click sound immediately
     playerClickSound.currentTime = 0;
-    playerClickSound.play().catch(e => console.log('Audio playback blocked:', e));
+    playerClickSound.play().catch(e => console.log('Audio playback failed:', e));
     
     const clickedColor = event.target.getAttribute('data-color');
     playerSequence.push(clickedColor);
@@ -162,4 +177,5 @@ function newRound() {
 
 
 // --- Start the Game! ---
+// Now we just initialize the state, the game starts with the button click.
 initializeGame();
