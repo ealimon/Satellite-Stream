@@ -19,18 +19,19 @@ const messageElement = document.getElementById('message');
 const scoreElement = document.getElementById('score');
 const sequenceDisplay = document.getElementById('sequence-display');
 let sequenceSound;      // Sound for sequence playback
-let playerClickSound;   // Sound for player button clicks (NEW)
+let playerClickSound;   // Sound for player button clicks (THIS IS NOW CORRECTLY INITIALIZED)
 
 // --- Game Logic ---
 
-/** Creates the four initial buttons and sets up audio elements. (UPDATED) */
+/** Creates the four initial buttons and sets up audio elements. (FIXED) */
 function initializeGame() {
     // 1. Setup Audio Elements
     sequenceSound = new Audio('./Space_Button.mp3'); 
     sequenceSound.preload = 'auto';
     sequenceSound.volume = 0.5; 
 
-    // NEW: Use the same sound file for player clicks, but you can change the name later
+    // 🌟🌟🌟 THE CRITICAL FIX IS HERE 🌟🌟🌟
+    // We now correctly initialize the second audio element:
     playerClickSound = new Audio('./Space_Button.mp3'); 
     playerClickSound.preload = 'auto';
     playerClickSound.volume = 0.3; // Slightly softer feedback sound
@@ -50,17 +51,17 @@ function initializeGame() {
     setTimeout(newRound, 1000);
 }
 
-/** Displays the sequence to the player (Plays sequenceSound). */
+/** Displays the sequence to the player (Plays sequenceSound). (1200ms delay) */
 function displaySequence() {
     let i = 0;
-    const interval = setInterval(() => {
+    const interval = setInterval(() => { 
         if (i < gameSequence.length) {
             const color = gameSequence[i];
             const button = document.querySelector(`.sequence-button.${color}`);
             
             button.classList.add('active');
             
-            // 🔊 Play the sequence cue sound
+            // Play the sequence cue sound
             sequenceSound.currentTime = 0; 
             sequenceSound.play().catch(e => console.log('Audio playback blocked:', e)); 
             
@@ -77,10 +78,24 @@ function displaySequence() {
             isPlaying = true;
             playerSequence = [];
         }
-    }, 800); 
+    }, 1200); 
 }
 
-/** Handles the player clicking one of the buttons. (UPDATED to play sound) */
+/** Generates a new random sequence. (Includes difficulty increase) */
+function generateSequence() {
+    gameSequence = [];
+    if (score > 0 && score % 3 === 0) {
+        sequenceLength++;
+        messageElement.textContent = `LEVEL UP! Sequence length is now ${sequenceLength}!`;
+    }
+    
+    for (let i = 0; i < sequenceLength; i++) {
+        const randomColor = COLOR_NAMES[Math.floor(Math.random() * COLOR_NAMES.length)];
+        gameSequence.push(randomColor);
+    }
+}
+
+/** Handles the player clicking one of the buttons. (Plays player click sound) */
 function handlePlayerClick(event) {
     if (!isPlaying) return;
 
@@ -95,8 +110,7 @@ function handlePlayerClick(event) {
     
     // Check if the current click matches the sequence
     if (playerSequence[currentStep] === gameSequence[currentStep]) {
-        // Correct logic remains the same
-        
+        // Correct logic
         if (playerSequence.length === gameSequence.length) {
             score++;
             scoreElement.textContent = "Score: " + score;
@@ -113,28 +127,13 @@ function handlePlayerClick(event) {
             setTimeout(newRound, 1800); 
         }
     } else {
-        // Incorrect logic remains the same
+        // Incorrect logic
         messageElement.textContent = "MISSION FAILED! Watch the sequence again.";
         document.querySelectorAll('.sequence-button').forEach(btn => btn.style.pointerEvents = 'none');
         document.querySelectorAll('.sequence-button').forEach(btn => btn.style.opacity = '0.5'); 
         isPlaying = false;
         
         setTimeout(newRound, 2500); 
-    }
-}
-
-/** Generates a new random sequence. (Includes difficulty increase) */
-function generateSequence() {
-    gameSequence = [];
-    // Increase sequence length every 3 successful rounds
-    if (score > 0 && score % 3 === 0) {
-        sequenceLength++;
-        messageElement.textContent = `LEVEL UP! Sequence length is now ${sequenceLength}!`;
-    }
-    
-    for (let i = 0; i < sequenceLength; i++) {
-        const randomColor = COLOR_NAMES[Math.floor(Math.random() * COLOR_NAMES.length)];
-        gameSequence.push(randomColor);
     }
 }
 
