@@ -1,92 +1,162 @@
-body {
-    font-family: 'Arial', sans-serif;
-    text-align: center;
-    background-color: #F0F8FF;
-    color: #333;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
+// --- Game Configuration ---
+const COLORS = {
+    red: '#FF4500',
+    blue: '#1E90FF',
+    green: '#3CB371',
+    yellow: '#FFD700'
+};
+const COLOR_NAMES = Object.keys(COLORS); // ['red', 'blue', 'green', 'yellow']
+
+let gameSequence = []; // Stores the sequence to be played
+let playerSequence = []; // Stores the player's clicks
+let sequenceLength = 3; // Starts easy with a 3-step sequence
+let score = 0;
+const SCORE_TO_WIN = 10;
+let isPlaying = false; // Prevents clicks during the display sequence
+
+// --- DOM Elements ---
+const messageElement = document.getElementById('message');
+const scoreElement = document.getElementById('score');
+const sequenceDisplay = document.getElementById('sequence-display');
+let sequenceSound; // Variable to hold the audio element
+
+// --- Game Logic ---
+
+/** Creates the four initial buttons and starts the game. (UPDATED WITH CORRECT SOUND FILE NAME) */
+function initializeGame() {
+    // 1. Setup Audio Element
+    // CRITICAL FIX: Reference the file name you uploaded
+    sequenceSound = new Audio('./Space_Button.mp3'); 
+    sequenceSound.preload = 'auto';
+    sequenceSound.volume = 0.5; // Set volume to 50% for a soft sound
+
+    // 2. Setup Buttons
+    COLOR_NAMES.forEach(colorName => {
+        const button = document.createElement('button');
+        button.classList.add('sequence-button', colorName);
+        button.style.backgroundColor = COLORS[colorName];
+        button.textContent = colorName.toUpperCase();
+        button.setAttribute('data-color', colorName);
+        button.addEventListener('click', handlePlayerClick);
+        sequenceDisplay.appendChild(button);
+    });
+    
+    // Start the game loop
+    setTimeout(newRound, 1000);
 }
 
-header {
-    width: 80%;
-    margin-bottom: 30px;
+/** Displays the sequence to the player. (UPDATED with sound playback) */
+function displaySequence() {
+    let i = 0;
+    const interval = setInterval(() => {
+        if (i < gameSequence.length) {
+            const color = gameSequence[i];
+            const button = document.querySelector(`.sequence-button.${color}`);
+            
+            // Highlight the button
+            button.classList.add('active');
+            
+            // 🔊 Play the sound simultaneously with the light-up
+            sequenceSound.currentTime = 0; // Rewind the sound to the start
+            sequenceSound.play().catch(e => console.log('Audio playback blocked:', e)); 
+            
+            // Turn it off after a short time
+            setTimeout(() => {
+                button.classList.remove('active');
+            }, 500); 
+            
+            i++;
+        } else {
+            clearInterval(interval);
+            messageElement.textContent = "Your turn! Repeat the sequence.";
+            // Enable buttons for player input
+            document.querySelectorAll('.sequence-button').forEach(btn => btn.style.pointerEvents = 'auto');
+            document.querySelectorAll('.sequence-button').forEach(btn => btn.style.opacity = '1'); 
+            isPlaying = true;
+            playerSequence = [];
+        }
+    }, 800); 
 }
 
-#score {
-    font-size: 1.5em;
-    font-weight: bold;
-    text-align: left;
-    margin-bottom: 10px;
+/** Generates a new random sequence. (Includes difficulty increase) */
+function generateSequence() {
+    gameSequence = [];
+    // Increase sequence length every 3 successful rounds
+    if (score > 0 && score % 3 === 0) {
+        sequenceLength++;
+        messageElement.textContent = `LEVEL UP! Sequence length is now ${sequenceLength}!`;
+    }
+    
+    for (let i = 0; i < sequenceLength; i++) {
+        const randomColor = COLOR_NAMES[Math.floor(Math.random() * COLOR_NAMES.length)];
+        gameSequence.push(randomColor);
+    }
 }
 
-#message {
-    font-size: 2.5em;
-    font-weight: 800;
-    color: #4B0082;
-    min-height: 50px;
+/** Handles the player clicking one of the buttons. */
+function handlePlayerClick(event) {
+    if (!isPlaying) return;
+
+    const clickedColor = event.target.getAttribute('data-color');
+    playerSequence.push(clickedColor);
+
+    const currentStep = playerSequence.length - 1;
+    
+    // Check if the current click matches the sequence
+    if (playerSequence[currentStep] === gameSequence[currentStep]) {
+        // Correct click
+        
+        if (playerSequence.length === gameSequence.length) {
+            // Sequence is complete and correct!
+            score++;
+            scoreElement.textContent = "Score: " + score;
+            messageElement.textContent = "SUCCESS! Get ready for the next sequence.";
+            
+            if (score >= SCORE_TO_WIN) {
+                handleWin();
+                return;
+            }
+            
+            // Disable buttons and start next round
+            document.querySelectorAll('.sequence-button').forEach(btn => btn.style.pointerEvents = 'none');
+            document.querySelectorAll('.sequence-button').forEach(btn => btn.style.opacity = '0.5'); 
+            isPlaying = false;
+            setTimeout(newRound, 1800); 
+        }
+    } else {
+        // Incorrect click
+        messageElement.textContent = "MISSION FAILED! Watch the sequence again.";
+        document.querySelectorAll('.sequence-button').forEach(btn => btn.style.pointerEvents = 'none');
+        document.querySelectorAll('.sequence-button').forEach(btn => btn.style.opacity = '0.5'); 
+        isPlaying = false;
+        
+        setTimeout(newRound, 2500); 
+    }
 }
 
-#sequence-display {
-    display: grid;
-    /* Grid layout for 2x2 buttons */
-    grid-template-columns: repeat(2, 1fr); 
-    grid-template-rows: repeat(2, 1fr);
-    gap: 40px;
-    padding: 20px;
-    background-color: #E0FFFF; /* Light background for contrast */
-    border-radius: 15px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-    margin-top: 50px;
-    width: 350px; /* Fixed size for the grid */
-    height: 350px;
+/** Handles the winning condition for Game 4. */
+function handleWin() {
+    messageElement.textContent = "🎉 SERIES COMPLETE! You are a Cosmic Sequence Master!";
+    scoreElement.textContent = "Final Score: " + score;
+    
+    sequenceDisplay.innerHTML = '';
+    const congratsMessage = document.createElement('h2');
+    congratsMessage.textContent = "Thank you for playing Cosmic Crew Adventures!";
+    congratsMessage.style.color = '#4B0082';
+    
+    sequenceDisplay.appendChild(congratsMessage);
 }
 
-.sequence-button {
-    width: 100%;
-    height: 100%;
-    border-radius: 15px;
-    border: 5px solid #333;
-    font-size: 1.2em;
-    font-weight: bold;
-    color: white;
-    cursor: pointer;
-    box-shadow: 0 5px 0 0 #000;
-    transition: background-color 0.2s, box-shadow 0.1s, transform 0.1s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.5; /* Dimmed state */
-    pointer-events: none; /* Initially disabled */
+/** Sets up and starts a new round. */
+function newRound() {
+    generateSequence();
+    messageElement.textContent = "WATCH! Sequence length: " + sequenceLength;
+    isPlaying = false;
+    
+    // Give a brief moment before the sequence starts
+    setTimeout(displaySequence, 1500);
 }
 
-.sequence-button:active {
-    transform: translateY(2px);
-    box-shadow: 0 3px 0 0 #000;
-}
 
-/* Light-up state for the sequence display */
-.active {
-    opacity: 1;
-    box-shadow: 0 0 30px 5px currentColor; /* Glow effect */
-}
-
-/* Button colors */
-.red { background-color: #FF4500; }
-.blue { background-color: #1E90FF; }
-.green { background-color: #3CB371; }
-.yellow { background-color: #FFD700; color: #333; }
-
-
-footer {
-    width: 100%;
-    margin-top: auto;
-    padding: 20px;
-    font-size: 0.9em;
-    color: #666;
-    border-top: 1px solid #eee;
-    text-align: center;
-}
+// --- Start the Game! ---
+initializeGame();
