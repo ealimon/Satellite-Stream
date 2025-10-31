@@ -20,26 +20,18 @@ const scoreElement = document.getElementById('score');
 const sequenceDisplay = document.getElementById('sequence-display');
 let sequenceSound;      
 let playerClickSound;   
-let startButton; // NEW: Reference for the start button
+let startButton; 
 
 // --- Game Logic ---
 
-/** Creates the initial buttons and sets up audio elements. (FIXED FOR BROWSER POLICY) */
+/** Initializes DOM elements only. Audio loading is moved to startGame(). */
 function initializeGame() {
-    // 1. Get the start button reference
+    // 1. Get the start button reference and prepare it
     startButton = document.getElementById('start-button');
+    // We attach the listener here, but the function itself now loads audio
     startButton.addEventListener('click', startGame);
 
-    // 2. Setup Audio Elements
-    sequenceSound = new Audio('./Space_Button.mp3'); 
-    sequenceSound.preload = 'auto';
-    sequenceSound.volume = 0.5; 
-
-    playerClickSound = new Audio('./Space_Button.mp3'); 
-    playerClickSound.preload = 'auto';
-    playerClickSound.volume = 0.3; 
-
-    // 3. Setup Buttons (These are created, but hidden by the start-screen initially)
+    // 2. Setup Buttons (Still needed for the DOM structure)
     COLOR_NAMES.forEach(colorName => {
         const button = document.createElement('button');
         button.classList.add('sequence-button', colorName);
@@ -51,20 +43,32 @@ function initializeGame() {
     });
 }
 
-/** Function called ONLY by the user's first click to unlock audio. (NEW) */
+/** Function called ONLY by the user's first click to unlock audio and start the game. (NEW FIX) */
 function startGame() {
-    // Hide the start screen
+    // 🌟🌟🌟 THE CRITICAL FIX IS HERE 🌟🌟🌟
+    // 1. Create and initialize audio objects ONLY after the user clicks
+    sequenceSound = new Audio('./Space_Button.mp3'); 
+    sequenceSound.preload = 'auto';
+    sequenceSound.volume = 0.5; 
+
+    playerClickSound = new Audio('./Space_Button.mp3'); 
+    playerClickSound.preload = 'auto';
+    playerClickSound.volume = 0.3; 
+    
+    // 2. Hide the start screen immediately
     document.getElementById('start-screen').style.display = 'none';
     messageElement.textContent = "Get ready!";
     
-    // Start the game loop after a brief delay
+    // 3. Prevent this function from running again
+    startButton.removeEventListener('click', startGame);
+
+    // 4. Start the game loop after a brief delay
     setTimeout(newRound, 1000); 
 }
 
-/** Displays the sequence to the player (Plays sequenceSound). (IMPROVED CONSISTENCY) */
+/** Displays the sequence to the player (Plays sequenceSound). (1200ms delay) */
 function displaySequence() {
     let i = 0;
-    // CRITICAL TIMING: Use 500ms for light duration and 700ms for delay, making the cycle exactly 1200ms
     const lightDuration = 500;
     const intervalDelay = 1200; 
 
@@ -75,11 +79,11 @@ function displaySequence() {
             
             button.classList.add('active');
             
-            // 🔊 Play the sequence cue sound
+            // Play the sequence cue sound
+            // This is now guaranteed to work because audio objects were created during the click.
             sequenceSound.currentTime = 0; 
-            sequenceSound.play().catch(e => console.log('Audio playback failed (after unlock):', e)); 
+            sequenceSound.play().catch(e => console.log('Audio playback failed:', e)); 
             
-            // Turn it off after the lightDuration
             setTimeout(() => {
                 button.classList.remove('active');
             }, lightDuration); 
@@ -93,7 +97,7 @@ function displaySequence() {
             isPlaying = true;
             playerSequence = [];
         }
-    }, intervalDelay); // <-- Cycle time is 1.2 seconds
+    }, intervalDelay); 
 }
 
 /** Generates a new random sequence. (Includes difficulty increase) */
@@ -114,7 +118,7 @@ function generateSequence() {
 function handlePlayerClick(event) {
     if (!isPlaying) return;
 
-    // 🔊 Play the player click sound immediately
+    // Play the player click sound immediately
     playerClickSound.currentTime = 0;
     playerClickSound.play().catch(e => console.log('Audio playback failed:', e));
     
@@ -177,5 +181,4 @@ function newRound() {
 
 
 // --- Start the Game! ---
-// Now we just initialize the state, the game starts with the button click.
 initializeGame();
