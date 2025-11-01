@@ -28,7 +28,6 @@ let startButton;
 function initializeGame() {
     // 1. Get the start button reference and prepare it
     startButton = document.getElementById('start-button');
-    // We attach the listener here, but the function itself now loads audio
     startButton.addEventListener('click', startGame);
 
     // 2. Setup Buttons (Still needed for the DOM structure)
@@ -45,7 +44,6 @@ function initializeGame() {
 
 /** Function called ONLY by the user's first click to unlock audio and start the game. (NEW FIX) */
 function startGame() {
-    // 🌟🌟🌟 THE CRITICAL FIX IS HERE 🌟🌟🌟
     // 1. Create and initialize audio objects ONLY after the user clicks
     sequenceSound = new Audio('./Space_Button.mp3'); 
     sequenceSound.preload = 'auto';
@@ -54,6 +52,11 @@ function startGame() {
     playerClickSound = new Audio('./Space_Button.mp3'); 
     playerClickSound.preload = 'auto';
     playerClickSound.volume = 0.3; 
+    
+    // 🌟🌟🌟 CRITICAL FIX: Play the sound immediately upon click to unlock the audio context. 🌟🌟🌟
+    // We play sequenceSound at the end of the click event.
+    sequenceSound.play().catch(e => console.log('Initial audio unlock failed:', e));
+    sequenceSound.pause(); // Immediately pause it so it doesn't interrupt the "Get Ready" message
     
     // 2. Hide the start screen immediately
     document.getElementById('start-screen').style.display = 'none';
@@ -80,7 +83,6 @@ function displaySequence() {
             button.classList.add('active');
             
             // Play the sequence cue sound
-            // This is now guaranteed to work because audio objects were created during the click.
             sequenceSound.currentTime = 0; 
             sequenceSound.play().catch(e => console.log('Audio playback failed:', e)); 
             
