@@ -1,3 +1,87 @@
+body {
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+    background-color: #F0F8FF;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+}
+
+header {
+    width: 80%;
+    margin-bottom: 30px;
+}
+
+#score {
+    font-size: 1.5em;
+    font-weight: bold;
+    text-align: left;
+    margin-bottom: 10px;
+}
+
+#message {
+    font-size: 2.5em;
+    font-weight: 800;
+    color: #4B0082;
+    min-height: 50px;
+}
+
+#sequence-display {
+    display: grid;
+    /* Grid layout for 2x2 buttons */
+    grid-template-columns: repeat(2, 1fr); 
+    grid-template-rows: repeat(2, 1fr);
+    gap: 40px;
+    padding: 20px;
+    background-color: #E0FFFF; /* Light background for contrast */
+    border-radius: 15px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    margin-top: 50px;
+    width: 350px; /* Fixed size for the grid */
+    height: 350px;
+    position: relative; /* Needed for absolute positioning of start screen */
+}
+
+.sequence-button {
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    border: 5px solid #333;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 5px 0 0 #000;
+    transition: background-color 0.2s, box-shadow 0.1s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.5; /* Dimmed state */
+    pointer-events: none; /* Initially disabled */
+}
+
+.sequence-button:active {
+    transform: translateY(2px);
+    box-shadow: 0 3px 0 0 #000;
+}
+
+/* Light-up state for the sequence display */
+.active {
+    opacity: 1;
+    box-shadow: 0 0 30px 5px currentColor; /* Glow effect */
+}
+
+/* Button colors */
+.red { background-color: #FF4500; }
+.blue { background-color: #1E90FF; }
+.green { background-color: #3CB371; }
+.yellow { background-color: #FFD700; color: #333; }
+
+
 /* New Styles for the Start Screen */
 #start-screen {
     position: absolute;
@@ -29,4 +113,15 @@
 #start-button:active {
     transform: translateY(2px);
     box-shadow: 0 3px 0 0 #6A1A9A;
+}
+
+
+footer {
+    width: 100%;
+    margin-top: auto;
+    padding: 20px;
+    font-size: 0.9em;
+    color: #666;
+    border-top: 1px solid #eee;
+    text-align: center;
 }
