@@ -115,15 +115,23 @@ function generateSequence() {
     }
 }
 
-/** Handles the player clicking one of the buttons. (Plays player click sound) */
+/** Handles the player clicking one of the buttons. (Plays player click sound and adds visual flash) */
 function handlePlayerClick(event) {
     if (!isPlaying) return;
+
+    const clickedButton = event.target; // Get reference to the button
+    
+    // 🌟 NEW: Add and remove the 'active' class for visual flash
+    clickedButton.classList.add('active');
+    setTimeout(() => {
+        clickedButton.classList.remove('active');
+    }, 200); // Flash for 200 milliseconds
 
     // Play the player click sound immediately
     playerClickSound.currentTime = 0;
     playerClickSound.play().catch(e => console.log('Audio playback failed:', e));
     
-    const clickedColor = event.target.getAttribute('data-color');
+    const clickedColor = clickedButton.getAttribute('data-color');
     playerSequence.push(clickedColor);
 
     const currentStep = playerSequence.length - 1;
