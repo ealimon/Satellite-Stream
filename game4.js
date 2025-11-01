@@ -30,7 +30,7 @@ function initializeGame() {
     startButton = document.getElementById('start-button');
     startButton.addEventListener('click', startGame);
 
-    // 2. Setup Buttons (Still needed for the DOM structure)
+    // 2. Setup Buttons 
     COLOR_NAMES.forEach(colorName => {
         const button = document.createElement('button');
         button.classList.add('sequence-button', colorName);
@@ -42,9 +42,9 @@ function initializeGame() {
     });
 }
 
-/** Function called ONLY by the user's first click to unlock audio and start the game. (NEW FIX) */
+/** Function called ONLY by the user's first click to unlock audio and start the game. */
 function startGame() {
-    // 1. Create and initialize audio objects ONLY after the user clicks
+    // 1. Create and initialize audio objects ONLY after the user clicks (Fixes browser security issue)
     sequenceSound = new Audio('./Space_Button.mp3'); 
     sequenceSound.preload = 'auto';
     sequenceSound.volume = 0.5; 
@@ -53,10 +53,9 @@ function startGame() {
     playerClickSound.preload = 'auto';
     playerClickSound.volume = 0.3; 
     
-    // 🌟🌟🌟 CRITICAL FIX: Play the sound immediately upon click to unlock the audio context. 🌟🌟🌟
-    // We play sequenceSound at the end of the click event.
+    // CRITICAL FIX: Play and immediately pause a sound to unlock the audio context.
     sequenceSound.play().catch(e => console.log('Initial audio unlock failed:', e));
-    sequenceSound.pause(); // Immediately pause it so it doesn't interrupt the "Get Ready" message
+    sequenceSound.pause(); 
     
     // 2. Hide the start screen immediately
     document.getElementById('start-screen').style.display = 'none';
@@ -69,7 +68,7 @@ function startGame() {
     setTimeout(newRound, 1000); 
 }
 
-/** Displays the sequence to the player (Plays sequenceSound). (1200ms delay) */
+/** Displays the sequence to the player (Plays sequenceSound). (1200ms delay for easier tracking) */
 function displaySequence() {
     let i = 0;
     const lightDuration = 500;
