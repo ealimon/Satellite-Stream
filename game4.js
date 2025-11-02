@@ -20,7 +20,7 @@ const scoreElement = document.getElementById('score');
 const sequenceDisplay = document.getElementById('sequence-display');
 let sequenceSound;      
 let playerClickSound;   
-let wrongSound;         // Distinct sound for incorrect answer
+let wrongSound;         
 let startButton; 
 
 // --- Helper Functions ---
@@ -28,6 +28,17 @@ let startButton;
 /** Removes any flash feedback classes after a short delay. */
 function clearFeedback() {
     messageElement.classList.remove('correct-feedback', 'incorrect-feedback');
+}
+
+/** Helper to apply/remove the 'dimmed' state to all sequence buttons */
+function setButtonsDimmed(isDimmed) {
+    document.querySelectorAll('.sequence-button').forEach(btn => {
+        if (isDimmed) {
+            btn.classList.add('dimmed');
+        } else {
+            btn.classList.remove('dimmed');
+        }
+    });
 }
 
 
@@ -49,6 +60,9 @@ function initializeGame() {
         button.addEventListener('click', handlePlayerClick);
         sequenceDisplay.appendChild(button);
     });
+    
+    // STARTING STATE: DIMMED (wait for user click)
+    setButtonsDimmed(true); 
 }
 
 /** Function called ONLY by the user's first click to unlock audio and start the game. */
@@ -86,6 +100,7 @@ function startGame() {
 
 /** Displays the sequence to the player (Plays sequenceSound). (1200ms delay for easier tracking) */
 function displaySequence() {
+    // The setButtonsDimmed(true) in newRound already prepares the buttons.
     let i = 0;
     const lightDuration = 500;
     const intervalDelay = 1200; 
@@ -95,7 +110,8 @@ function displaySequence() {
             const color = gameSequence[i];
             const button = document.querySelector(`.sequence-button.${color}`);
             
-            button.classList.add('active');
+            // Brighten up to full opacity (1) via the .active class
+            button.classList.add('active'); 
             
             // Play the sequence cue sound
             sequenceSound.currentTime = 0; 
@@ -109,8 +125,8 @@ function displaySequence() {
         } else {
             clearInterval(interval);
             messageElement.textContent = "Your turn! Repeat the sequence.";
-            document.querySelectorAll('.sequence-button').forEach(btn => btn.style.pointerEvents = 'auto');
-            document.querySelectorAll('.sequence-button').forEach(btn => btn.style.opacity = '1'); 
+            // Remove dimmed class to allow player interaction (full brightness)
+            setButtonsDimmed(false); 
             isPlaying = true;
             playerSequence = [];
         }
@@ -138,7 +154,7 @@ function handlePlayerClick(event) {
     const clickedButton = event.target;
     clearFeedback(); 
 
-    // Visual Click Flash
+    // Visual Click Flash (Full brightness is guaranteed by the base opacity)
     clickedButton.classList.add('active');
     setTimeout(() => {
         clickedButton.classList.remove('active');
@@ -168,8 +184,7 @@ function handlePlayerClick(event) {
                 return;
             }
             
-            document.querySelectorAll('.sequence-button').forEach(btn => btn.style.pointerEvents = 'none');
-            document.querySelectorAll('.sequence-button').forEach(btn => btn.style.opacity = '0.5'); 
+            setButtonsDimmed(true); // Dim and disable input
             isPlaying = false;
             setTimeout(newRound, 1800); 
         } else {
@@ -184,8 +199,7 @@ function handlePlayerClick(event) {
         messageElement.classList.add('incorrect-feedback');
         messageElement.textContent = "MISSION FAILED! Watch the sequence again.";
         
-        document.querySelectorAll('.sequence-button').forEach(btn => btn.style.pointerEvents = 'none');
-        document.querySelectorAll('.sequence-button').forEach(btn => btn.style.opacity = '0.5'); 
+        setButtonsDimmed(true); // Dim and disable input
         isPlaying = false;
         
         setTimeout(newRound, 2500); 
@@ -211,6 +225,8 @@ function newRound() {
     generateSequence();
     messageElement.textContent = "WATCH! Sequence length: " + sequenceLength;
     isPlaying = false;
+    
+    setButtonsDimmed(true); // Dim and disable input before sequence starts
     
     // Give a brief moment before the sequence starts
     setTimeout(displaySequence, 1500);
