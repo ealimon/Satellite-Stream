@@ -56,12 +56,18 @@ header {
     color: white;
     cursor: pointer;
     box-shadow: 0 5px 0 0 #000;
-    transition: background-color 0.2s, box-shadow 0.1s, transform 0.1s;
+    transition: background-color 0.2s, box-shadow 0.1s, transform 0.1s, opacity 0.3s; /* Added opacity transition */
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.5; /* Dimmed state */
-    pointer-events: none; /* Initially disabled */
+    opacity: 1; /* BASE OPACITY IS NOW 1 (Full Brightness) */
+    pointer-events: auto; /* BASE STATE IS CLICKABLE */
+}
+
+/* NEW: Dimmed state, applied when sequence is playing or wait state */
+.dimmed {
+    opacity: 0.5;
+    pointer-events: none;
 }
 
 .sequence-button:active {
@@ -69,7 +75,7 @@ header {
     box-shadow: 0 3px 0 0 #000;
 }
 
-/* Light-up state for the sequence display (used for playback AND click feedback) */
+/* Light-up state for the sequence display (full brightness is guaranteed by base opacity: 1) */
 .active {
     opacity: 1;
     box-shadow: 0 0 30px 5px currentColor; /* Glow effect */
@@ -89,7 +95,7 @@ header {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: #E0FFFF; /* Matches container background */
+    background-color: #E0FFFF; 
     display: flex;
     align-items: center;
     justify-content: center;
@@ -102,7 +108,7 @@ header {
     font-size: 2em;
     font-weight: bold;
     color: white;
-    background-color: #8A2BE2; /* Violet */
+    background-color: #8A2BE2; 
     border: none;
     border-radius: 10px;
     cursor: pointer;
@@ -115,10 +121,10 @@ header {
     box-shadow: 0 3px 0 0 #6A1A9A;
 }
 
-/* NEW Feedback styles for the message element */
+/* Feedback styles for the message element */
 #message.correct-feedback {
-    background-color: #D4EDDA; /* Light Green */
-    color: #155724; /* Dark Green Text */
+    background-color: #D4EDDA; 
+    color: #155724; 
     border: 2px solid #C3E6CB;
     border-radius: 5px;
     padding: 5px 10px;
@@ -126,8 +132,8 @@ header {
 }
 
 #message.incorrect-feedback {
-    background-color: #F8D7DA; /* Light Red */
-    color: #721C24; /* Dark Red Text */
+    background-color: #F8D7DA; 
+    color: #721C24; 
     border: 2px solid #F5C6CB;
     border-radius: 5px;
     padding: 5px 10px;
