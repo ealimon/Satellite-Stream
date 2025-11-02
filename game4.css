@@ -69,7 +69,7 @@ header {
     box-shadow: 0 3px 0 0 #000;
 }
 
-/* Light-up state for the sequence display */
+/* Light-up state for the sequence display (used for playback AND click feedback) */
 .active {
     opacity: 1;
     box-shadow: 0 0 30px 5px currentColor; /* Glow effect */
@@ -82,7 +82,7 @@ header {
 .yellow { background-color: #FFD700; color: #333; }
 
 
-/* New Styles for the Start Screen */
+/* Styles for the Start Screen */
 #start-screen {
     position: absolute;
     top: 0;
@@ -113,6 +113,25 @@ header {
 #start-button:active {
     transform: translateY(2px);
     box-shadow: 0 3px 0 0 #6A1A9A;
+}
+
+/* NEW Feedback styles for the message element */
+#message.correct-feedback {
+    background-color: #D4EDDA; /* Light Green */
+    color: #155724; /* Dark Green Text */
+    border: 2px solid #C3E6CB;
+    border-radius: 5px;
+    padding: 5px 10px;
+    transition: background-color 0.1s;
+}
+
+#message.incorrect-feedback {
+    background-color: #F8D7DA; /* Light Red */
+    color: #721C24; /* Dark Red Text */
+    border: 2px solid #F5C6CB;
+    border-radius: 5px;
+    padding: 5px 10px;
+    transition: background-color 0.1s;
 }
 
 
