@@ -3,112 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cosmic Crew Adventures | Game Selection</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            text-align: center;
-            background-color: #0D1B2A; /* Deep Space Blue */
-            color: #E0FFFF; /* Pale Aqua Text */
-            margin: 0;
-            padding: 50px 20px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        h1 {
-            font-size: 3.5em;
-            color: #FFD700; /* Gold */
-            margin-bottom: 10px;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-        }
-
-        h2 {
-            font-size: 1.8em;
-            margin-bottom: 40px;
-            color: #B0E0E6; /* Powder Blue */
-        }
-
-        #game-menu {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 30px;
-            width: 100%;
-            max-width: 800px;
-            padding: 20px;
-        }
-
-        .game-link {
-            display: block;
-            padding: 25px;
-            border-radius: 15px;
-            text-decoration: none;
-            color: white;
-            font-size: 1.5em;
-            font-weight: bold;
-            box-shadow: 0 8px 0 0 #070d14; /* Darker shadow */
-            transition: transform 0.1s, box-shadow 0.1s, background-color 0.3s;
-        }
-
-        .game-link:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 0 0 #070d14;
-        }
-
-        .game-link:active {
-            transform: translateY(4px);
-            box-shadow: 0 4px 0 0 #070d14;
-        }
-
-        /* --- Custom Colors for Each Game --- */
-        .game-1 { background-color: #FF4500; } /* Red Comet Catch */
-        .game-2 { background-color: #1E90FF; } /* Blue Shape Sorter */
-        .game-3 { background-color: #008080; } /* Teal Size-Up */
-        .game-4 { background-color: #8A2BE2; } /* Violet Satellite Stream */
-
-        footer {
-            margin-top: 50px;
-            font-size: 1em;
-            color: #666;
-        }
-
-    </style>
+    <title>Sequence Satellite Stream | Cosmic Crew Adventures</title>
+    <link rel="stylesheet" href="./game4.css?v=5"> 
 </head>
 <body>
 
-    <h1>🚀 COSMIC CREW ADVENTURES 🪐</h1>
-    <h2>Select Your Mission</h2>
+    <header>
+        <div id="score">Score: 0</div>
+        <div id="message">Watch the sequence!</div>
+    </header>
 
-    <div id="game-menu">
-        
-        <a href="https://ealimon.github.io/Color-Comet-Catch/" class="game-link game-1">
-            MISSION 1: Color Comet Catch 
-            <div style="font-size: 0.6em; font-weight: normal;">(Color Recognition)</div>
-        </a>
-
-        <a href="https://ealimon.github.io/Astro-Shape-Sorter/" class="game-link game-2">
-            MISSION 2: Astro-Shape Sorter
-            <div style="font-size: 0.6em; font-weight: normal;">(Shape Recognition)</div>
-        </a>
-
-        <a href="https://ealimon.github.io/Planet-Size-Up/" class="game-link game-3">
-            MISSION 3: Planet Size-Up
-            <div style="font-size: 0.6em; font-weight: normal;">(Size & Order)</div>
-        </a>
-
-        <a href="https://ealimon.github.io/Satellite-Stream/" class="game-link game-4">
-            MISSION 4: Sequence Satellite Stream
-            <div style="font-size: 0.6em; font-weight: normal;">(Sequential Memory)</div>
-        </a>
-        
-    </div>
-
+    <main>
+        <div id="sequence-display">
+            <div id="start-screen">
+                <button id="start-button">START MISSION</button>
+            </div>
+        </div>
+    </main>
+    
     <footer>
         <p>Design By Storybook Education</p>
     </footer>
 
+    <script src="./game4.js?v=5"></script>
 </body>
 </html>
