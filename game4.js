@@ -20,7 +20,16 @@ const scoreElement = document.getElementById('score');
 const sequenceDisplay = document.getElementById('sequence-display');
 let sequenceSound;      
 let playerClickSound;   
+let wrongSound;         // Distinct sound for incorrect answer
 let startButton; 
+
+// --- Helper Functions ---
+
+/** Removes any flash feedback classes after a short delay. */
+function clearFeedback() {
+    messageElement.classList.remove('correct-feedback', 'incorrect-feedback');
+}
+
 
 // --- Game Logic ---
 
@@ -52,6 +61,11 @@ function startGame() {
     playerClickSound = new Audio('./Space_Button.mp3'); 
     playerClickSound.preload = 'auto';
     playerClickSound.volume = 0.3; 
+    
+    // Initialize the distinct wrong sound
+    wrongSound = new Audio('./error.wav');
+    wrongSound.preload = 'auto';
+    wrongSound.volume = 0.7;
     
     // CRITICAL FIX: Play and immediately pause a sound to unlock the audio context.
     sequenceSound.play().catch(e => console.log('Initial audio unlock failed:', e));
@@ -115,31 +129,34 @@ function generateSequence() {
     }
 }
 
-/** Handles the player clicking one of the buttons. (Plays player click sound and adds visual flash) */
+/** Handles the player clicking one of the buttons. (Plays appropriate sound, adds visual flash, and checks sequence) */
 function handlePlayerClick(event) {
     if (!isPlaying) return;
 
-    const clickedButton = event.target; // Get reference to the button
-    
-    // 🌟 NEW: Add and remove the 'active' class for visual flash
+    const clickedButton = event.target;
+    clearFeedback(); 
+
+    // Visual Click Flash
     clickedButton.classList.add('active');
     setTimeout(() => {
         clickedButton.classList.remove('active');
-    }, 200); // Flash for 200 milliseconds
-
-    // Play the player click sound immediately
-    playerClickSound.currentTime = 0;
-    playerClickSound.play().catch(e => console.log('Audio playback failed:', e));
+    }, 200); 
     
     const clickedColor = clickedButton.getAttribute('data-color');
     playerSequence.push(clickedColor);
 
     const currentStep = playerSequence.length - 1;
     
-    // Check if the current click matches the sequence
+    // Sequence Check
     if (playerSequence[currentStep] === gameSequence[currentStep]) {
-        // Correct logic
+        
+        // Correct Action: Play neutral click sound and show green flash
+        playerClickSound.currentTime = 0;
+        playerClickSound.play().catch(e => console.log('Audio playback failed:', e));
+        messageElement.classList.add('correct-feedback');
+
         if (playerSequence.length === gameSequence.length) {
+            // Sequence is complete and correct
             score++;
             scoreElement.textContent = "Score: " + score;
             messageElement.textContent = "SUCCESS! Get ready for the next sequence.";
@@ -153,10 +170,18 @@ function handlePlayerClick(event) {
             document.querySelectorAll('.sequence-button').forEach(btn => btn.style.opacity = '0.5'); 
             isPlaying = false;
             setTimeout(newRound, 1800); 
+        } else {
+            // Correct but sequence is not complete, clear the flash quickly
+            setTimeout(clearFeedback, 300);
         }
     } else {
-        // Incorrect logic
+        // Incorrect Action: Play wrong sound and show red flash
+        wrongSound.currentTime = 0;
+        wrongSound.play().catch(e => console.log('Wrong audio playback failed:', e));
+        
+        messageElement.classList.add('incorrect-feedback');
         messageElement.textContent = "MISSION FAILED! Watch the sequence again.";
+        
         document.querySelectorAll('.sequence-button').forEach(btn => btn.style.pointerEvents = 'none');
         document.querySelectorAll('.sequence-button').forEach(btn => btn.style.opacity = '0.5'); 
         isPlaying = false;
@@ -180,6 +205,7 @@ function handleWin() {
 
 /** Sets up and starts a new round. */
 function newRound() {
+    clearFeedback(); // Ensure no flash is left over
     generateSequence();
     messageElement.textContent = "WATCH! Sequence length: " + sequenceLength;
     isPlaying = false;
